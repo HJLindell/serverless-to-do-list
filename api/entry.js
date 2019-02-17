@@ -44,7 +44,7 @@ module.exports.create = async (event, context) => {
     const body = JSON.parse(event.body);
     const item = {
       id: uuid(),
-      dueDate: Date.now(),
+      dueDate: body.dueDate,
       title: body.title,
       description: body.description,
       address: body.address,
@@ -97,6 +97,7 @@ module.exports.read = async (event, context) => {
 
 module.exports.update = async (event, context) => {
   const id = event.pathParameters.id;
+
   try {
     const body = JSON.parse(event.body);
     const params = {
@@ -138,8 +139,8 @@ module.exports.delete = async (event, context) => {
       TableName: process.env.STAGE + '_entries',
     };
 
-    const result = await dynamoDb.delete(params).promise();
-    console.log(result);
+    await dynamoDb.delete(params).promise();
+
     return {
       statusCode: 200,
     };
