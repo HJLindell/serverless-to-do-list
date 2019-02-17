@@ -1,0 +1,93 @@
+service: serverless-to-do-list
+
+custom:
+  region: ${file(env.${self:provider.stage}.json):REGION}
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: dev
+  region: ${self:custom.region}
+  environment:
+    REGION: ${self:custom.region}
+    STAGE: ${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["entryTable", "Arn"] }
+        - { "Fn::Join": [ "", [ "Fn::GetAtt": ["entryTable", "Arn"], "/*" ] ] }
+
+functions:
+  index:
+    handler: api/entry.index
+    events:
+      - http:
+          path: /entries
+          method: get
+          cors: true
+  create:
+    handler: api/entry.create
+    events:
+      - http:
+          path: /entries
+          method: post
+          cors: true
+  read:
+    handler: api/entry.read
+    events:
+      - http:
+          path: /entries/{id}
+          method: get
+          cors: true
+  update:
+    handler: api/entry.update
+    events:
+      - http:
+          path: /entries/{id}
+          method: put
+          cors: true
+  delete:
+    handler: api/entry.delete
+    events:
+      - http:
+          path: /entries/{id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    entryTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.stage}_entries
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: dueDate
+            AttributeType: N
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: DateGSI
+            KeySchema:
+              - AttributeName: id
+                KeyType: HASH
+              - AttributeName: dueDate
+                KeyType: RANGE
+            Projection:
+              ProjectionType: "ALL"
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5

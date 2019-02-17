@@ -1,0 +1,15 @@
+{
+  "name": "serverless-to-do-list",
+  "version": "1.0.0",
+  "description": "A simple to-do list created with serverless framework and AWS",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Johan Lindell <johan.h.lindell@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.401.0",
+    "uuid": "^3.3.2"
+  }
+}
